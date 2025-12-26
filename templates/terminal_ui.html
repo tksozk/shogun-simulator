@@ -185,12 +185,6 @@
     .opt-title { font-size: 1.3rem; font-weight: bold; color: #ffcc00; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #442222; line-height: 1.4; }
     .opt-desc { font-size: 0.95rem; color: #ccaabb; line-height: 1.6; }
 
-    .loading-overlay {
-        position: absolute; top:0; left:0; width:100%; height:100%;
-        background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center;
-        color: #ffcc00; font-size: 1.5rem; letter-spacing: 0.2em; z-index: 60;
-    }
-
     /* Mobile Responsive Adjustments */
     @media (max-width: 800px) {
         .top-bar { padding: 0 15px; height: 60px; }
@@ -269,7 +263,6 @@
     <form id="decisionForm" method="POST" action="/decision">
         <input type="hidden" name="selected_idx" id="selectedIdx">
         <div class="decision-panel" id="decisionPanel">
-            <div class="loading-overlay" id="loading-overlay">執行中...</div>
             {% for i in range(1, 5) %}
             <div class="option-card" onclick="selectOption(this, {{ i }})">
                 <div class="opt-header">OPTION {{ i }}</div>
@@ -324,7 +317,7 @@
             element.classList.add('selected');
             setTimeout(() => {
                 document.getElementById('selectedIdx').value = idx;
-                document.getElementById('loading-overlay').style.display = 'flex';
+                // ここにあった loading-overlay の表示処理を削除しました
                 document.getElementById('decisionForm').submit();
             }, 300);
         }
