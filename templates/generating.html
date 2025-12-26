@@ -1,105 +1,54 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>将軍様シミュレーター</title>
-<link rel="icon" href="static/favicon.png" type="image/png">
-
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Serif+JP:wght@700&display=swap" rel="stylesheet">
-<style>
-    :root {
-        /* スマホのアドレスバー対策（古いブラウザへのフォールバック付き） */
-        --vh: 100vh;
-        --vh: 100dvh;
-    }
-
-    body {
-        background-color: #1a0505; /* 赤黒 */
-        color: #ffcc00; /* 金 */
-        font-family: 'Noto Serif JP', serif;
-        
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        
-        /* 画面の高さ設定（アドレスバーによる崩れ防止） */
-        height: var(--vh);
-        width: 100%;
-        margin: 0;
-        overflow: hidden;
-
-        /* スマホ特有の「引っ張り」エフェクト（バウンス）を無効化 */
-        overscroll-behavior: none;
-
-        /* iPhoneのノッチ（切り欠き）対応 */
-        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-        box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generating...</title>
     
-    /* 回転する星 */
-    .spinner {
-        font-size: 4rem;
-        color: #ff0000;
-        text-shadow: 0 0 20px #ffcc00;
-        animation: spin 2s linear infinite;
-        margin-bottom: 30px;
-    }
-    
-    h2 {
-        font-size: 1.5rem;
-        letter-spacing: 0.1em;
-        text-align: center;
-        width: 100%;
-        margin: 0 0 15px 0;
-        animation: blink 1.5s infinite;
-        
-        /* 日本語の単語途中での不自然な改行を防ぐ */
-        word-break: keep-all;
-        overflow-wrap: break-word;
-        padding: 0 20px; /* 画面端ギリギリにならないよう余白 */
-        box-sizing: border-box;
-    }
-    
-    .sub-text {
-        font-family: 'Share Tech Mono', monospace;
-        color: #cc5555;
-        font-size: 1.0rem;
-        text-align: center;
-        padding: 0 10px;
-    }
+    <meta http-equiv="refresh" content="3; url={{ url_for('process_next') }}">
 
-    /* 走査線ノイズ */
-    .scanline {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to bottom, rgba(255,0,0,0) 50%, rgba(255,0,0,0.1) 50%);
-        background-size: 100% 4px;
-        pointer-events: none;
-        z-index: 10; /* 最前面に表示 */
-    }
-
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-</style>
-</head>
-<body>
-    <div class="scanline"></div>
-    
-    <div class="spinner">★</div>
-    
-    <h2 id="loading-text">国民幸福度を計算中...</h2>
-    <div class="sub-text">CALCULATING HAPPINESS...</div>
-
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: "Courier New", Courier, monospace;
+            display: flex;
+            flex-direction: column; /* スマホでのレイアウト崩れ防止 */
+            justify-content: center;
+            align-items: center;
+            /* Xブラウザの上下バー対策 */
+            min-height: 100vh; 
+            min-height: 100dvh; 
+            margin: 0;
+            text-align: center;
+            width: 100%;
+        }
+        .loader {
+            border: 4px solid #000;
+            border-top: 4px solid #0f0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
     <script>
-        // 3秒後に自動遷移
-        setTimeout(() => {
-            window.location.href = "/process_next";
+        // メインの遷移処理（3秒後）
+        setTimeout(function() {
+            window.location.href = "{{ url_for('process_next') }}";
         }, 3000);
     </script>
+</head>
+<body>
+    <div>
+        <div class="loader"></div>
+        <p>CALCULATING HAPPINESS...</p>
+        <p>Please wait while the General decides.</p>
+    </div>
 </body>
 </html>
