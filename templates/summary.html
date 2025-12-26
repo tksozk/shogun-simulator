@@ -155,16 +155,15 @@
         <div id="raw-content" style="display:none;">{{ summary_text }}</div>
         
         <div class="btn-group">
-            <a href="{{ share_url }}" target="_blank" class="btn btn-share" onclick="if(window.AudioManager) AudioManager.playSE('se_click')">
+            <a href="{{ share_url }}" target="_blank" class="btn btn-share">
                 X (Twitter) でプロパガンダを拡散
             </a>
-            <a href="/" class="btn btn-retry" onclick="if(window.AudioManager) AudioManager.playSE('se_click')">
+            <a href="/" class="btn btn-retry">
                 次の独裁を開始する
             </a>
         </div>
     </div>
 
-    <script src="/static/js/audio_manager.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const rawTextElement = document.getElementById('raw-content');
@@ -176,11 +175,6 @@
             const rawText = rawTextElement.innerText;
             let i = 0;
             
-            // BGM再生（AudioManagerが存在する場合のみ実行）
-            if(window.AudioManager && typeof AudioManager.playBGM === 'function') {
-                AudioManager.playBGM('bgm_ending');
-            }
-
             function type() {
                 if (i < rawText.length) {
                     target.textContent += rawText.charAt(i);

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 将軍様シミュレーター (The Glorious General)
-Xブラウザ対応・Cookieセッション・リダイレクト回避版
+Xブラウザ対応・Cookieセッション・リダイレクト回避・容量軽量化版
 """
 import os
 import csv
@@ -61,7 +61,7 @@ def index():
     session.clear()
     session["year"] = 2026
     session["national_happiness"] = INIT_HAPPINESS
-    session["log"] = []
+    session["log"] = [] # ここには辞書リスト [{'y':2026, 'o':1}, ...] が入ります
     session["turn_complete"] = False 
     return render_template('title.html')
 
@@ -91,7 +91,28 @@ def terminal():
     if not current_scene:
         return redirect(url_for('ending'))
     
-    log_text = "\n".join(session.get("log", []))
+    # === ログ復元処理 (Cookie容量対策) ===
+    # session["log"] にはIDしか入っていないため、ここでテキストに復元する
+    raw_log = session.get("log", [])
+    formatted_log = []
+    
+    for entry in raw_log:
+        # 古いデータ形式(文字列)が混入した場合のガード
+        if isinstance(entry, dict):
+            past_year = entry.get('y')
+            past_opt = entry.get('o')
+            
+            # 該当年のシナリオを取得
+            past_scene = scenarios.get(past_year) or scenarios.get(str(past_year)) or scenarios.get(int(past_year))
+            if past_scene:
+                # 選択肢のタイトルを取得
+                title = past_scene.get(f"opt{past_opt}_title", "記録不明")
+                formatted_log.append(f"[{past_year}] {title}")
+        else:
+            # 万が一文字列のまま保存されていた場合（旧バージョン互換）
+            formatted_log.append(str(entry))
+
+    log_text = "\n".join(formatted_log)
 
     return render_template('terminal_ui.html', 
                            year=year,
@@ -115,8 +136,10 @@ def decision():
         return redirect(url_for('terminal'))
 
     tag = current_scene.get(f"opt{selected_idx}_tag", "reform")
-    choice_title = current_scene.get(f"opt{selected_idx}_title", "決断")
-
+    
+    # ログにはタイトルではなく「年」と「選択ID」だけを保存する（容量削減）
+    # choice_title はここでは取得不要になったが、ロジック確認のため変数は残してもよい
+    
     delta = 0
     if tag == "delusion": delta = 13
     elif tag == "purge": delta = 11
@@ -127,8 +150,10 @@ def decision():
     session["national_happiness"] = max(0, current_val + delta)
     
     # ログ更新（Cookieセッション用にリストを再代入）
+    # データ構造: {'y': 年, 'o': 選択肢番号}
+    # キー名を1文字にすることでさらに容量を節約
     current_log = session.get("log", [])
-    current_log.append(f"[{year}] {choice_title}")
+    current_log.append({"y": year, "o": int(selected_idx)})
     session["log"] = current_log
     
     session["turn_complete"] = True

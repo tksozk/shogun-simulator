@@ -96,10 +96,12 @@
     <div class="sub-text">CALCULATING HAPPINESS...</div>
 
     <script>
-        // 3秒後に自動遷移
+        // 1.5秒後に自動遷移（テンポ改善のため3000msから短縮）
         setTimeout(() => {
-            window.location.href = "/process_next";
-        }, 3000);
+            // window.location.href ではなく replace を使用することで履歴を上書きし、
+            // 「戻る」ボタンでのループ脱出不能状態を防ぐ
+            window.location.replace("/process_next");
+        }, 1500);
     </script>
 </body>
 </html>
