@@ -177,7 +177,8 @@ def process_next():
 
 @app.route('/game_over')
 def game_over():
-    summary_title = "REGIME COLLAPSED"
+    # 変更点1: タイトルを日本語化（A案）
+    summary_title = "政権崩壊"
     summary_text = "【幸福度の限界突破】\nプロパガンダの強度が限界を超えました。国民は「地上の楽園」という嘘に気づき、発狂した暴徒となって官邸になだれ込みました。計算が甘かったようです。皮肉なことに、あなたが作り上げた「完璧な虚構」の中に、あなた自身の逃げ場だけが用意されていませんでした。"
     
     rank = "E"
@@ -222,8 +223,9 @@ def ending():
     share_text = f"【将軍様シミュレーター】ランク『{rank}: {title}』\n最終幸福度: {happiness}/100\n#将軍様シミュレーター\n{site_url}"
     share_url = "https://twitter.com/intent/tweet?text=" + quote(share_text)
 
+    # 変更点2: 'ARCHIVE:' プレフィックスを削除し、タイトルのみを表示
     return render_template('summary.html', 
-                           summary_title=f"ARCHIVE: {title}", 
+                           summary_title=title, 
                            summary_text=desc, 
                            share_url=share_url, 
                            rank=rank)
