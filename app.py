@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 将軍様シミュレーター (The Glorious General)
-Xブラウザ対応・Cookieセッション版
+Xブラウザ対応・Cookieセッション・リダイレクト回避版
 """
 import os
 import csv
@@ -13,9 +13,11 @@ app = Flask(__name__)
 # セキュリティキーの設定
 app.secret_key = os.environ.get("SECRET_KEY", "dictator-secret-key-production")
 
-# ====== セッション設定（修正版） ======
+# ====== セッション設定 ======
+# Xのブラウザ（WebView）対策：外部サイトからの遷移でもセッションを維持しやすくする
+# ファイルシステム保存(Flask-Session)は廃止し、標準のCookieセッションを使用
 app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
-app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_SECURE"] = True 
 
 # ====== ゲーム定数 ======
 INIT_HAPPINESS = 30
@@ -89,7 +91,6 @@ def terminal():
     if not current_scene:
         return redirect(url_for('ending'))
     
-    # ログ表示用のテキスト生成
     log_text = "\n".join(session.get("log", []))
 
     return render_template('terminal_ui.html', 
@@ -100,8 +101,10 @@ def terminal():
 
 @app.route('/decision', methods=['POST'])
 def decision():
+    # 連打対策等で既にターン完了している場合
     if session.get("turn_complete"):
-        return redirect(url_for('generating'))
+        # 安全策として直接レンダリング
+        return render_template('generating.html')
 
     selected_idx = request.form.get('selected_idx')
     year = session.get("year", 2026)
@@ -123,15 +126,16 @@ def decision():
     current_val = session.get("national_happiness", INIT_HAPPINESS)
     session["national_happiness"] = max(0, current_val + delta)
     
-    # ログの更新（リスト操作）
-    # Cookieセッションの場合、リスト内の変更を検知させるために再代入が必要な場合がある
+    # ログ更新（Cookieセッション用にリストを再代入）
     current_log = session.get("log", [])
     current_log.append(f"[{year}] {choice_title}")
     session["log"] = current_log
     
     session["turn_complete"] = True
     
-    return redirect(url_for('generating'))
+    # 【重要変更】リダイレクトせず、直接HTMLを表示してブラウザの負担を減らす
+    # これでX内ブラウザで「真っ暗になる」現象を防ぎます
+    return render_template('generating.html')
 
 @app.route('/generating')
 def generating():
@@ -142,7 +146,6 @@ def process_next():
     if session.get("turn_complete"):
         session["year"] = session.get("year", 2026) + 1
         session["turn_complete"] = False
-        # Cookieに変更を確実に反映させる
         session.modified = True
         
     return redirect(url_for('terminal'))
