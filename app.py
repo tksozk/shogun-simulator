@@ -1,27 +1,21 @@
 # -*- coding: utf-8 -*-
 """
 将軍様シミュレーター (The Glorious General)
+Xブラウザ対応・Cookieセッション版
 """
 import os
 import csv
 import sys
 from urllib.parse import quote
 from flask import Flask, session, redirect, url_for, render_template, request
-from flask_session import Session 
 
 app = Flask(__name__)
+# セキュリティキーの設定
 app.secret_key = os.environ.get("SECRET_KEY", "dictator-secret-key-production")
 
-# ====== セッション設定 ======
-SESSION_DIR = "./flask_session_data"
-if not os.path.exists(SESSION_DIR):
-    os.makedirs(SESSION_DIR)
-
-app.config["SESSION_TYPE"] = "filesystem" 
-app.config["SESSION_FILE_DIR"] = SESSION_DIR
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_USE_SIGNER"] = True
-Session(app)
+# ====== セッション設定（修正版） ======
+app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
+app.config["SESSION_COOKIE_SECURE"] = True
 
 # ====== ゲーム定数 ======
 INIT_HAPPINESS = 30
@@ -95,6 +89,7 @@ def terminal():
     if not current_scene:
         return redirect(url_for('ending'))
     
+    # ログ表示用のテキスト生成
     log_text = "\n".join(session.get("log", []))
 
     return render_template('terminal_ui.html', 
@@ -127,7 +122,12 @@ def decision():
 
     current_val = session.get("national_happiness", INIT_HAPPINESS)
     session["national_happiness"] = max(0, current_val + delta)
-    session["log"].append(f"[{year}] {choice_title}")
+    
+    # ログの更新（リスト操作）
+    # Cookieセッションの場合、リスト内の変更を検知させるために再代入が必要な場合がある
+    current_log = session.get("log", [])
+    current_log.append(f"[{year}] {choice_title}")
+    session["log"] = current_log
     
     session["turn_complete"] = True
     
@@ -142,6 +142,8 @@ def process_next():
     if session.get("turn_complete"):
         session["year"] = session.get("year", 2026) + 1
         session["turn_complete"] = False
+        # Cookieに変更を確実に反映させる
+        session.modified = True
         
     return redirect(url_for('terminal'))
 
@@ -199,4 +201,4 @@ def ending():
                            rank=rank)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
