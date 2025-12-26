@@ -160,7 +160,7 @@ def game_over():
     rank = "E (処刑)"
     
     # 本番URLを設定してください
-    site_url = "https://xxxx.onrender.com" 
+    site_url = "https://shogun-simulator.onrender.com" 
     share_text = f"【訃報】幸福度計算をミスって革命されました。 #将軍様シミュレーター\n{site_url}"
     share_url = "https://twitter.com/intent/tweet?text=" + share_text
     
@@ -196,7 +196,7 @@ def ending():
         desc = "【0-80】あなたは暴動を恐れるあまり、媚びへつらうような政治を行いました。命は助かりましたが、歴史には「退屈な行政官」として記録されます。"
 
     # 本番URLを設定してください
-    site_url = "https://xxxx.onrender.com"
+    site_url = "https://shogun-simulator.onrender.com"
     share_text = f"【将軍様シミュレーター】ランク『{rank}: {title}』\n最終幸福度: {happiness}/100\n#将軍様シミュレーター\n{site_url}"
     share_url = "https://twitter.com/intent/tweet?text=" + share_text
 
