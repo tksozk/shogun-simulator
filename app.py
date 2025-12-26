@@ -185,7 +185,7 @@ def game_over():
     
     site_url = "https://shogun-simulator.onrender.com/" 
     
-    share_text = f"【政権崩壊】幸福度計算を計算し損ねて革命されました。 #将軍様シミュレーター\n{site_url}"
+    share_text = f"【政権崩壊】国民幸福度を計算し損ねて革命されました。 #将軍様シミュレーター\n{site_url}"
     share_url = "https://twitter.com/intent/tweet?text=" + quote(share_text)
     
     return render_template('summary.html', 
