@@ -90,21 +90,10 @@
     
     <div class="spinner">★</div>
     
-    <h2 id="loading-text">歴史を捏造しています...</h2>
-    <div class="sub-text">REWRITING HISTORY ARCHIVES</div>
+    <h2 id="loading-text">国家幸福度を計算中...</h2>
+    <div class="sub-text">CALCULATING HAPPINESS...</div>
 
     <script>
-        // ランダムでブラックなメッセージを表示
-        const messages = [
-            "歴史を捏造しています...",
-            "反対派リストを更新中...",
-            "スイス銀行へ送金中...",
-            "国民の記憶を消去中...",
-            "国連決議を無視しています...",
-            "肖像画を修正中..."
-        ];
-        document.getElementById('loading-text').innerText = messages[Math.floor(Math.random() * messages.length)];
-
         // 3秒後に自動遷移
         setTimeout(() => {
             window.location.href = "/process_next";
