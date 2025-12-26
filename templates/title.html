@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>THE GLORIOUS GENERAL</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --main-color: #ffe0b0;   /* 金文字 */
+        --accent-color: #ff0000; /* 革命レッド */
+        --bg-color: #000000;
+    }
+
+    body {
+        margin: 0; padding: 0; height: 100vh; overflow: hidden;
+        background-color: var(--bg-color); 
+        background-image: repeating-conic-gradient(from 0deg, #1a0505 0deg 10deg, #2a0a0a 10deg 20deg);
+        font-family: 'Noto Serif JP', serif;
+        color: var(--main-color);
+        user-select: none;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+
+    /* === 演出 === */
+    .vignette {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle, transparent 40%, #000 100%);
+        pointer-events: none; z-index: 1;
+    }
+
+    .particles {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-image: radial-gradient(#ff0000 1px, transparent 1px);
+        background-size: 50px 50px;
+        opacity: 0.3;
+        animation: fly 10s linear infinite;
+        z-index: 0;
+    }
+
+    @keyframes fly {
+        0% { transform: translateY(0) scale(1); }
+        100% { transform: translateY(-50px) scale(1.1); }
+    }
+
+    /* === UIレイアウト === */
+    .ui-layer {
+        position: relative; z-index: 10;
+        text-align: center;
+        width: 100%;
+        max-width: 800px;
+        padding: 0 20px;
+        box-sizing: border-box;
+    }
+
+    .star-mark {
+        font-size: 4rem; color: var(--accent-color);
+        text-shadow: 0 0 20px var(--main-color);
+        animation: spinStar 10s linear infinite;
+        margin-bottom: 20px;
+        display: inline-block;
+    }
+
+    h1 { margin: 0 0 40px 0; }
+
+    .main-title {
+        font-size: 4rem;
+        display: block;
+        text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+        border-bottom: 2px solid var(--accent-color);
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        white-space: nowrap;
+    }
+
+    .sub-title {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 1.2rem;
+        letter-spacing: 0.5em;
+        color: #aa5555;
+    }
+
+   .start-btn {
+        /* terminal_ui.html の .btn-decision と同じ配色スタイル */
+        background: linear-gradient(180deg, #aa0000, #660000); /* 内部は赤グラデーション */
+        border: 2px solid #ffcc00; /* 枠は黄色 */
+        color: #ffcc00;            /* 文字も黄色 */
+        
+        font-family: 'Noto Serif JP', serif;
+        font-size: 1.5rem;
+        font-weight: bold;         /* 太字にして視認性を向上 */
+        padding: 15px 80px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        
+        /* 立体感と影の追加 */
+        text-shadow: 1px 1px 0 #330000;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        transition: all 0.2s;
+        letter-spacing: 0.1em;
+    }
+
+    .start-btn:hover {
+        /* ホバー時は少し浮き上がり、赤色が明るくなる */
+        transform: translateY(-2px);
+        background: linear-gradient(180deg, #cc0000, #880000);
+        color: #ffeeb0; /* ホバー時に少しだけ文字を明るく */
+        box-shadow: 0 15px 40px rgba(255, 50, 0, 0.4);
+    }
+
+    .copyright {
+        position: fixed; bottom: 20px; width: 100%; text-align: center;
+        color: #664444; font-size: 0.8rem;
+    }
+
+    @keyframes spinStar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* === スマホ最適化 === */
+    @media (max-width: 600px) {
+        .ui-layer {
+            padding: 0 15px; /* 左右の余白を確保 */
+        }
+
+        .star-mark {
+            font-size: 3rem; /* 星を少し小さく */
+            margin-bottom: 15px;
+        }
+
+        .main-title {
+            /* 画面幅の8%サイズにし、確実にはみ出しを防ぐ */
+            font-size: 8vw; 
+            border-bottom-width: 1px;
+        }
+
+        .sub-title {
+            font-size: 0.8rem;
+            /* 英語タイトルが画面外に出ないよう字間を詰める */
+            letter-spacing: 0.1em; 
+        }
+
+        .start-btn {
+            /* 横幅を超過しないよう、パディングではなく幅指定に変更 */
+            padding: 15px 0;
+            width: 80%;
+            max-width: 300px;
+            font-size: 1.2rem;
+        }
+        
+        .copyright {
+            font-size: 0.6rem;
+        }
+    }
+</style>
+</head>
+
+<body>
+    <div class="particles"></div>
+    <div class="vignette"></div>
+
+    <div class="ui-layer">
+        <div class="star-mark">★</div>
+        <h1>
+            <span class="main-title">将軍様シミュレーター</span>
+            <div class="sub-title">THE GLORIOUS GENERAL</div>
+        </h1>
+        
+        <form action="/tutorial" method="get">
+            <button type="submit" class="start-btn">
+                独裁開始
+            </button>
+        </form>
+    </div>
+
+    <div class="copyright">© 202X THE SUPREME LEADER</div>
+</body>
+</html>

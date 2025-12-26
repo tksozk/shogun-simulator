@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>OFFICIAL HISTORY</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-color: #1a0505;
+        --text-color: #ffe0b0;
+        --accent-color: #ff0000;
+        --panel-bg: rgba(40, 0, 0, 0.9);
+        --border-color: #ffcc00;
+    }
+
+    body { 
+        background-color: var(--bg-color); 
+        color: var(--text-color); 
+        font-family: 'Noto Serif JP', serif; 
+        
+        /* 画面全体のレイアウト設定 */
+        max-width: 800px; 
+        margin: 0 auto; 
+        min-height: 100vh; /* コンテンツが少なくても画面いっぱい使う */
+        
+        /* ノッチ対応（セーフエリア確保）と基本余白 */
+        padding: 
+            calc(20px + env(safe-area-inset-top)) 
+            calc(20px + env(safe-area-inset-right)) 
+            calc(20px + env(safe-area-inset-bottom)) 
+            calc(20px + env(safe-area-inset-left));
+            
+        box-sizing: border-box;
+        position: relative; /* 走査線の基準 */
+    }
+
+    /* 走査線ノイズ（前回の画面と統一してオーバーレイ表示） */
+    .scanline {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(255,0,0,0) 50%, rgba(255,0,0,0.05) 50%);
+        background-size: 100% 4px;
+        pointer-events: none; /* クリックを邪魔しない */
+        z-index: 999;
+    }
+
+    header {
+        text-align: center; 
+        margin-bottom: 30px;
+        border-bottom: 3px double var(--border-color);
+        padding-bottom: 20px;
+    }
+
+    .rank-stamp {
+        /* スマホ対応：画面幅に応じてサイズ可変 (最小3rem, 最大5rem) */
+        font-size: clamp(3rem, 15vw, 5rem);
+        
+        color: var(--accent-color);
+        font-weight: bold; 
+        border: 5px solid var(--accent-color);
+        display: inline-block; 
+        padding: 10px 30px;
+        transform: rotate(-10deg);
+        margin: 20px 0;
+        text-shadow: 0 0 20px #ff0000;
+        box-shadow: 0 0 20px inset #ff0000;
+        
+        /* スタンプ枠線も太すぎないように調整 */
+        border-width: clamp(3px, 1vw, 5px);
+    }
+
+    .report-container {
+        background: var(--panel-bg);
+        border: 2px solid var(--border-color);
+        padding: 30px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    }
+
+    .summary-text {
+        font-size: 1.1rem; 
+        line-height: 1.8;
+        /* デフォルトは両端揃え（PC向け） */
+        text-align: justify; 
+        margin-bottom: 30px;
+        
+        /* 長い英単語などでレイアウト崩れを防ぐ */
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* ボタン群 */
+    .btn-group { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
+    
+    .btn {
+        display: block; width: 100%; padding: 15px;
+        text-align: center; text-decoration: none;
+        font-weight: bold; font-family: 'Noto Serif JP', serif;
+        transition: all 0.3s; border: 1px solid var(--border-color);
+        box-sizing: border-box;
+        cursor: pointer; /* PCでの操作性向上 */
+    }
+    
+    .btn-share {
+        background: #000; color: #fff; border-color: #fff;
+    }
+    .btn-retry {
+        background: linear-gradient(90deg, #aa0000, #660000);
+        color: #ffcc00;
+    }
+    .btn:hover { transform: scale(1.02); }
+
+    /* --- スマホ向け最適化 (画面幅600px以下) --- */
+    @media (max-width: 600px) {
+        body {
+            /* 左右の余白を詰める */
+            padding-left: calc(10px + env(safe-area-inset-left));
+            padding-right: calc(10px + env(safe-area-inset-right));
+        }
+
+        .report-container {
+            /* コンテナ内の余白も詰める */
+            padding: 20px 15px;
+        }
+
+        .summary-text {
+            /* スマホでは左揃えにしてスカスカ表示を回避 */
+            text-align: left;
+            font-size: 1.0rem; /* 少し小さくして情報量を確保 */
+        }
+        
+        .rank-stamp {
+            padding: 5px 20px; /* スタンプ内の余白も調整 */
+        }
+    }
+
+</style>
+</head>
+<body>
+    <div class="scanline"></div>
+
+    <header>
+        <div style="color: #ff0000; font-size: 2rem;">★</div>
+        <h1>{{ summary_title }}</h1>
+        <div class="rank-stamp">{{ rank }}</div>
+    </header>
+
+    <div class="report-container">
+        <div class="summary-text" id="typewriter-summary"></div>
+        
+        <div id="raw-content" style="display:none;">{{ summary_text }}</div>
+        
+        <div class="btn-group">
+            <a href="{{ share_url }}" target="_blank" class="btn btn-share" onclick="if(window.AudioManager) AudioManager.playSE('se_click')">
+                X (Twitter) でプロパガンダを拡散
+            </a>
+            <a href="/" class="btn btn-retry" onclick="if(window.AudioManager) AudioManager.playSE('se_click')">
+                次の独裁を開始する
+            </a>
+        </div>
+    </div>
+
+    <script src="/static/js/audio_manager.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const rawTextElement = document.getElementById('raw-content');
+            const target = document.getElementById('typewriter-summary');
+            
+            // 要素がない場合のエラー回避
+            if (!rawTextElement || !target) return;
+
+            const rawText = rawTextElement.innerText;
+            let i = 0;
+            
+            // BGM再生（AudioManagerが存在する場合のみ実行）
+            if(window.AudioManager && typeof AudioManager.playBGM === 'function') {
+                AudioManager.playBGM('bgm_ending');
+            }
+
+            function type() {
+                if (i < rawText.length) {
+                    target.textContent += rawText.charAt(i);
+                    i++;
+                    setTimeout(type, 30);
+                }
+            }
+            type();
+        });
+    </script>
+</body>
+</html>

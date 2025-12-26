@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>THE SUCCESSION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            color: #ffe0b0; /* デフォルトは金文字（独白用） */
+            font-family: 'Noto Serif JP', serif;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; 
+            justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+            text-align: center;
+            line-height: 2.0;
+            user-select: none;
+            cursor: pointer;
+        }
+        .text-container {
+            width: 95%;
+            max-width: 600px;
+            font-size: 1.1rem;
+            position: relative;
+            min-height: 200px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 5px;
+            box-sizing: border-box;
+            white-space: normal; 
+        }
+
+        .fade-text {
+            display: none; opacity: 0; transition: opacity 1s;
+            position: absolute; width: 100%;
+            left: 0; right: 0; margin: auto;
+        }
+        .visible { display: block; opacity: 1; }
+        
+        /* 独白用の強調 */
+        .red-highlight { 
+            color: #ff3333; 
+            font-weight: bold; 
+            font-size: 1.2em;
+        }
+
+        /* --- システム解説用のデザイン --- */
+        .system-message-box {
+            font-family: 'Noto Sans JP', sans-serif; /* ゴシック体 */
+            color: #ccffcc; /* 端末風の薄緑色 */
+            background: rgba(0, 30, 0, 0.85); /* 背景を少し濃くして読みやすく */
+            border: 1px solid #33cc33; /* 緑の枠線 */
+            border-radius: 8px;
+            padding: 20px 15px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            box-shadow: 0 0 15px rgba(50, 200, 50, 0.2);
+        }
+        .sys-header {
+            font-weight: bold;
+            color: #66ff66;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed #339933;
+            display: inline-block;
+            padding-bottom: 2px;
+        }
+        .sys-warning {
+            color: #ff5555; /* 警告色 */
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .sys-goal {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #337733;
+            color: #ffffcc;
+        }
+        /* ------------------------------------- */
+        
+        .skip-hint {
+            position: fixed; bottom: 20px;
+            font-size: 0.8rem; color: #443333;
+            animation: blink 2s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        @media (max-width: 600px) {
+            .text-container {
+                font-size: 0.95rem;
+                line-height: 1.8;
+                width: 100%;
+            }
+            .system-message-box {
+                font-size: 0.85rem;
+                padding: 15px 10px;
+                width: 90%;
+                margin: 0 auto;
+            }
+        }
+        @media (max-width: 350px) {
+            .text-container { font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body onclick="skipTutorial()">
+
+<div class="text-container">
+    <div id="msg1" class="fade-text">
+        偉大なる父が崩御した。<br>
+        今日から、私がこの国の<span class="red-highlight">「太陽」</span>だ。
+    </div>
+    <div id="msg2" class="fade-text">
+        国民は嘆き悲しむふりをしているが、<br>
+        その目は次の権力者を探している。
+    </div>
+    <div id="msg3" class="fade-text">
+        見せてやろう。真実など必要ない。<br>
+        私の言葉だけが、<span class="red-highlight">「正しい歴史」</span>になるのだ。
+    </div>
+    
+    <div id="msg4" class="fade-text system-message-box">
+        <div class="sys-header">【重要機密：幸福度パラメーターについて】</div>
+        <div style="margin-bottom: 8px;">
+            国民の幸福度は、あなたの<br>
+            「過激な振る舞い」によって上昇します。<br>
+            数値が高いほど、あなたは<br>
+            「神」に近い存在として評価されます。
+        </div>
+        <div class="sys-warning">
+            ⚠ 警告：数値が「100」を超えてはいけません。<br>
+            国民の限界（発狂点）を意味し、<br>
+            即座に革命（ゲームオーバー）となります。
+        </div>
+        <div class="sys-goal">
+            🏁 勝利条件：<br>
+            <strong>2035年の終了時点</strong>まで生存すること。<br>
+            最終的な幸福度で<strong>ランクA～E</strong>が判定されます。
+        </div>
+    </div>
+</div>
+
+<div class="skip-hint">CLICK TO SKIP >></div>
+
+<script>
+    let isSkipped = false;
+
+    // 強制的に次へ進む関数
+    function skipTutorial() {
+        if (isSkipped) return;
+        isSkipped = true;
+        location.href = '/terminal';
+    }
+
+    // 指定時間待つ関数
+    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    async function playScenario() {
+        const steps = [
+            { id: 'msg1', duration: 4000 },
+            { id: 'msg2', duration: 4000 },
+            { id: 'msg3', duration: 5000 },
+            { id: 'msg4', duration: 10000 } // 読む量が増えたのでさらに時間を延長
+        ];
+
+        for (let i = 0; i < steps.length; i++) {
+            if (isSkipped) return;
+
+            // 前のメッセージを消す
+            if (i > 0) {
+                const prev = document.getElementById(steps[i-1].id);
+                if (prev) {
+                    prev.classList.remove('visible');
+                    await wait(1000); // フェードアウト待ち
+                    prev.style.display = 'none';
+                }
+            }
+            
+            if (isSkipped) return;
+
+            // 次のメッセージを表示
+            const current = document.getElementById(steps[i].id);
+            if (current) {
+                current.style.display = 'block';
+                // リフロー強制
+                void current.offsetWidth; 
+                current.classList.add('visible');
+            }
+
+            // 読ませる時間待機
+            await wait(steps[i].duration);
+        }
+
+        // 全ステップ終了
+        skipTutorial();
+    }
+
+    window.onload = function() {
+        setTimeout(playScenario, 500);
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>将軍様シミュレーター</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-color: #1a0505;
+        --text-main: #ffe0b0;
+        --accent-red: #cc0000;
+        --border-color: #775544;
+    }
+
+    body {
+        background-color: var(--bg-color);
+        background-image: 
+            linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+            url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjMmEwNTA1Ii8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMzMzEwMTAiLz4KPC9zdmc+');
+        color: var(--text-main);
+        font-family: 'Noto Serif JP', serif;
+        margin: 0; padding: 0;
+        height: 100vh; overflow: hidden;
+        user-select: none;
+    }
+
+    /* エフェクト関連 */
+    .vignette {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle, transparent 50%, #000000 100%);
+        pointer-events: none; z-index: 1;
+    }
+    .scanline {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 2px,
+            rgba(0, 0, 0, 0.1) 3px
+        );
+        pointer-events: none; z-index: 2;
+    }
+
+    /* Header */
+    .top-bar {
+        position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+        background: linear-gradient(to bottom, #2a0a0a, #1a0505);
+        border-bottom: 1px solid var(--border-color);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 40px; box-sizing: border-box;
+        z-index: 100;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+    }
+    .app-title { font-size: 0.9rem; color: #886666; letter-spacing: 0.1em; opacity: 0.8; }
+    
+    .status-container { display: flex; align-items: center; gap: 20px; }
+    
+    .status-item { 
+        display: flex; 
+        flex-direction: column; 
+        align-items: flex-end; 
+        justify-content: center;
+    }
+    
+    .status-label { font-size: 0.75rem; color: #bb9999; margin-bottom: 2px; }
+    
+    .status-value { 
+        font-size: 1.8rem; 
+        font-weight: bold; 
+        color: var(--text-main); 
+        text-shadow: 0 0 10px rgba(255, 200, 0, 0.3); 
+        line-height: 1.0;
+    }
+    .status-value span { font-size: 1.0rem; margin-left: 2px; color: #aa8888; }
+    
+    /* 危険警告テキスト */
+    .status-warning {
+        font-size: 0.7rem;
+        color: #ff3333;
+        border: 1px solid #660000;
+        padding: 2px 6px;
+        background: rgba(50, 0, 0, 0.5);
+        border-radius: 4px;
+        animation: pulse 2s infinite;
+        white-space: nowrap; /* 折り返し禁止 */
+    }
+    @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+
+    .year-display {
+        font-size: 1.8rem; font-weight: bold; color: #ffffff;
+        text-shadow: 0 0 15px var(--accent-red);
+        border-bottom: 2px solid var(--accent-red);
+        padding-bottom: 5px; letter-spacing: 0.1em;
+    }
+
+    /* Main Content */
+    .main-wrapper {
+        position: relative; z-index: 10;
+        width: 100%; max-width: 900px;
+        margin: 0 auto;
+        padding-top: 130px; padding-bottom: 120px;
+        padding-left: 30px; padding-right: 30px;
+        box-sizing: border-box;
+        height: 100vh; overflow-y: auto;
+        -ms-overflow-style: none; scrollbar-width: none;
+    }
+    .main-wrapper::-webkit-scrollbar { display: none; }
+
+    .scenario-header { border-left: 8px solid var(--accent-red); padding-left: 25px; margin-bottom: 50px; }
+    .scenario-title-text { font-size: 2.4rem; font-weight: bold; line-height: 1.2; letter-spacing: 0.05em; text-shadow: 0 0 20px rgba(200, 50, 50, 0.2); }
+    
+    .scenario-body { font-size: 1.25rem; line-height: 2.2; text-align: justify; color: #eeddcc; min-height: 200px; }
+    .cursor::after { content: '▋'; animation: blink 1s infinite; color: var(--accent-red); margin-left: 5px;}
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    .log-area { margin-top: 60px; padding-top: 20px; border-top: 1px dashed #554444; font-size: 0.85rem; color: #886666; }
+
+    /* Footer Button */
+    .footer-action {
+        position: fixed; bottom: 40px; left: 0; width: 100%;
+        display: flex; justify-content: center;
+        z-index: 20; pointer-events: none;
+    }
+    .btn-decision {
+        pointer-events: auto;
+        background: linear-gradient(180deg, #aa0000, #660000);
+        border: 1px solid #ffcc00; color: #ffcc00;
+        font-family: 'Noto Serif JP', serif; font-size: 1.4rem; font-weight: bold;
+        padding: 18px 80px; cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        transition: all 0.2s; text-shadow: 1px 1px 0 #330000; letter-spacing: 0.1em;
+    }
+    .btn-decision:hover { transform: translateY(-2px); background: linear-gradient(180deg, #cc0000, #880000); }
+
+    /* Modal / Panel */
+    .backdrop {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); z-index: 40; display: none; backdrop-filter: blur(8px);
+    }
+    .backdrop.active { display: block; }
+
+    .decision-panel {
+        position: fixed; bottom: -120%; left: 0; width: 100%;
+        background: linear-gradient(to top, #1a0505, #2a0a0a);
+        border-top: 2px solid var(--accent-red);
+        z-index: 50; padding: 50px 20px;
+        transition: bottom 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;
+        box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
+        box-sizing: border-box;
+    }
+    .decision-panel.active { bottom: 0; }
+
+    .option-card {
+        background: rgba(40, 10, 10, 0.8); border: 1px solid #553333;
+        width: 280px; padding: 25px; cursor: pointer; position: relative;
+        transition: all 0.2s; text-align: left;
+    }
+    .option-card:hover { border-color: #ffcc00; background: rgba(60, 20, 20, 0.95); transform: translateY(-5px); }
+    .option-card.selected { background: #660000; border-color: #ff0000; }
+    
+    .opt-header { font-size: 0.9rem; color: #886666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.1em; }
+    .opt-title { font-size: 1.3rem; font-weight: bold; color: #ffcc00; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #442222; line-height: 1.4; }
+    .opt-desc { font-size: 0.95rem; color: #ccaabb; line-height: 1.6; }
+
+    .loading-overlay {
+        position: absolute; top:0; left:0; width:100%; height:100%;
+        background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center;
+        color: #ffcc00; font-size: 1.5rem; letter-spacing: 0.2em; z-index: 60;
+    }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 800px) {
+        /* Header Compactness */
+        .top-bar { padding: 0 15px; height: 60px; }
+        
+        .status-container { 
+            gap: 10px; 
+            /* 横並びにして警告と数値を近づける */
+            align-items: center;
+        }
+        
+        .status-item {
+            /* アイテム内は右揃えのまま */
+            align-items: flex-end; 
+        }
+
+        .status-label { font-size: 0.6rem; }
+        .status-value { font-size: 1.4rem; }
+        
+        /* 警告を非表示にせず、小さく表示 */
+        .status-warning { 
+            display: block; 
+            font-size: 0.6rem; 
+            padding: 1px 4px;
+            margin-right: -5px; /* 少し寄せる */
+        } 
+        
+        .year-display { font-size: 1.4rem; }
+        .app-title { display: none; } 
+
+        /* Main Content Spacing */
+        .main-wrapper {
+            padding-top: 85px;
+            padding-bottom: 100px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        .scenario-header {
+            margin-bottom: 30px;
+            padding-left: 15px;
+            border-left-width: 5px;
+        }
+        .scenario-title-text { 
+            font-size: 1.6rem;
+        }
+        .scenario-body {
+            font-size: 1.0rem;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        /* Button Adjustment for Safe Area */
+        .footer-action { 
+            /* iPhoneの下部バー(ホームインジケーター)を避けるための計算 */
+            bottom: calc(30px + env(safe-area-inset-bottom)); 
+        }
+        .btn-decision { width: 90%; padding: 15px 0; font-size: 1.1rem; }
+
+        /* Decision Panel Mobile Optimization */
+        .decision-panel {
+            padding: 20px 15px;
+            gap: 15px;
+            max-height: 85vh; 
+            overflow-y: auto;
+            align-items: flex-start;
+            z-index: 110;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .option-card {
+            width: 100%;
+            margin-bottom: 0;
+            padding: 20px;
+        }
+        .opt-title { font-size: 1.2rem; margin-bottom: 10px; }
+        .opt-desc { font-size: 0.9rem; }
+    }
+</style>
+</head>
+
+<body>
+    <div class="vignette"></div>
+    <div class="scanline"></div>
+
+    <header class="top-bar">
+        <div class="app-title">将軍様シミュレーター</div>
+        
+        <div class="status-container">
+            <div class="status-warning">※100超で崩壊</div>
+            <div class="status-item">
+                <span class="status-label">国民幸福度</span>
+                <div class="status-value">{{ happiness }}<span>/100</span></div>
+            </div>
+        </div>
+
+        <div class="year-display">{{ year }}年</div>
+    </header>
+
+    <div class="main-wrapper">
+        <div class="scenario-header">
+            <div class="scenario-title-text">{{ scenario.title }}</div>
+        </div>
+        <div class="scenario-body" id="typewriter-text"></div>
+        <div class="log-area">
+            <div>▼ 記録アーカイブ</div>
+            <div style="white-space: pre-line; margin-top:10px;">{{ log }}</div>
+        </div>
+    </div>
+
+    <div class="footer-action" id="triggerArea">
+        <button class="btn-decision" onclick="openPanel()">
+            偉大なる英断を実行
+        </button>
+    </div>
+
+    <div class="backdrop" id="backdrop" onclick="closePanel()"></div>
+    
+    <form id="decisionForm" method="POST" action="/decision">
+        <input type="hidden" name="selected_idx" id="selectedIdx">
+        <div class="decision-panel" id="decisionPanel">
+            <div class="loading-overlay" id="loading-overlay">執行中...</div>
+            {% for i in range(1, 5) %}
+            <div class="option-card" onclick="selectOption(this, {{ i }})">
+                <div class="opt-header">OPTION {{ i }}</div>
+                <div class="opt-title">{{ scenario['opt' ~ i ~ '_title'] }}</div>
+                <div class="opt-desc">{{ scenario['opt' ~ i ~ '_desc'] }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </form>
+
+    <script>
+        const rawIntro = `{{ scenario.intro }}`.replace(/\\n/g, '\n');
+        const rawSummary = `{{ scenario.summary }}`.replace(/\\n/g, '\n');
+        const fullText = rawIntro + '\n\n' + rawSummary;
+        const textContainer = document.getElementById('typewriter-text');
+        
+        function typeWriter() {
+            let i = 0;
+            textContainer.innerText = '';
+            textContainer.classList.add("cursor");
+            function type() {
+                if (i < fullText.length) {
+                    textContainer.innerText += fullText.charAt(i);
+                    i++;
+                    setTimeout(type, 15);
+                } else {
+                    textContainer.classList.remove("cursor");
+                }
+            }
+            type();
+        }
+
+        window.onload = function() { typeWriter(); };
+
+        function openPanel() {
+            document.getElementById('decisionPanel').classList.add('active');
+            document.getElementById('triggerArea').style.opacity = '0';
+            document.getElementById('backdrop').classList.add('active');
+        }
+
+        function closePanel() {
+            document.getElementById('decisionPanel').classList.remove('active');
+            document.getElementById('triggerArea').style.opacity = '1';
+            document.getElementById('backdrop').classList.remove('active');
+        }
+
+        function selectOption(element, idx) {
+            if (element.classList.contains('selected')) return;
+            const cards = document.querySelectorAll('.option-card');
+            cards.forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+            setTimeout(() => {
+                document.getElementById('selectedIdx').value = idx;
+                document.getElementById('loading-overlay').style.display = 'flex';
+                document.getElementById('decisionForm').submit();
+            }, 300);
+        }
+    </script>
+</body>
+</html>
