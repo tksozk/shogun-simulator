@@ -5,11 +5,11 @@
 import os
 import csv
 import sys
+from urllib.parse import quote
 from flask import Flask, session, redirect, url_for, render_template, request
 from flask_session import Session 
 
 app = Flask(__name__)
-# 本番環境では環境変数から読み込むことを推奨
 app.secret_key = os.environ.get("SECRET_KEY", "dictator-secret-key-production")
 
 # ====== セッション設定 ======
@@ -31,7 +31,6 @@ SCENARIO_FILE = "dictator_scenario.csv"
 
 # ====== ユーティリティ ======
 def load_scenario():
-    # (変更なしのため省略)
     scenarios = {}
     if not os.path.exists(SCENARIO_FILE):
         return {}
@@ -67,7 +66,6 @@ def index():
     session["year"] = 2026
     session["national_happiness"] = INIT_HAPPINESS
     session["log"] = []
-    # 【追加】ターン完了フラグの初期化
     session["turn_complete"] = False 
     return render_template('title.html')
 
@@ -107,8 +105,6 @@ def terminal():
 
 @app.route('/decision', methods=['POST'])
 def decision():
-    # 【追加】ガード処理：すでにこのターンの処理が終わっている場合
-    # 「戻る」ボタンでここに来ても、計算をスキップして次の画面へ流す
     if session.get("turn_complete"):
         return redirect(url_for('generating'))
 
@@ -133,7 +129,6 @@ def decision():
     session["national_happiness"] = max(0, current_val + delta)
     session["log"].append(f"[{year}] {choice_title}")
     
-    # 【追加】処理完了フラグを立てる
     session["turn_complete"] = True
     
     return redirect(url_for('generating'))
@@ -144,11 +139,8 @@ def generating():
 
 @app.route('/process_next')
 def process_next():
-    # 【追加】ガード処理：フラグが立っている時だけ年を進める
-    # 「戻る」でここに来た場合（フラグはFalseになっているはず）、何もしない
     if session.get("turn_complete"):
         session["year"] = session.get("year", 2026) + 1
-        # 次のターンのためにフラグをリセット
         session["turn_complete"] = False
         
     return redirect(url_for('terminal'))
@@ -156,13 +148,14 @@ def process_next():
 @app.route('/game_over')
 def game_over():
     summary_title = "REGIME COLLAPSED"
-    summary_text = "【幸福度の限界突破】\nプロパガンダの強度が限界を超えました。国民は「地上の楽園」という嘘に気づき、発狂した暴徒となって宮殿になだれ込みました。計算が甘かったようです。"
-    rank = "E (処刑)"
+    summary_text = "【幸福度の限界突破】\nプロパガンダの強度が限界を超えました。国民は「地上の楽園」という嘘に気づき、発狂した暴徒となって官邸になだれ込みました。計算が甘かったようです。"
     
-    # 本番URLを設定してください
-    site_url = "https://shogun-simulator.onrender.com" 
-    share_text = f"【訃報】幸福度計算をミスって革命されました。 #将軍様シミュレーター\n{site_url}"
-    share_url = "https://twitter.com/intent/tweet?text=" + share_text
+    rank = "E"
+    
+    site_url = "https://shogun-simulator.onrender.com/" 
+    
+    share_text = f"【急募：亡命先】幸福度計算をミスって革命されました。探さないでください。 #将軍様シミュレーター\n{site_url}"
+    share_url = "https://twitter.com/intent/tweet?text=" + quote(share_text)
     
     return render_template('summary.html', 
                            summary_title=summary_title, 
@@ -176,7 +169,7 @@ def ending():
     
     if happiness >= 96:
         rank = "A"
-        title = "現人神 (Living God)"
+        title = "現人神"
         desc = "【96-100】奇跡的なバランス感覚です。あなたの嘘は真実になりました。国民は心からあなたを崇拝し、後世の歴史書はあなたを神として記録するでしょう。"
     elif happiness >= 91:
         rank = "B"
@@ -185,7 +178,7 @@ def ending():
     elif happiness >= 86:
         rank = "C"
         title = "平凡な独裁者"
-        desc = "【86-90】そこそこの支持と、そこそこの不満。あなたは可もなく不可もない統治者として天寿を全うしました。"
+        desc = "【86-90】そこそこの支持と、そこそこの不満。あなたは可もなく不可もない統治者として過ごしました。"
     elif happiness >= 81:
         rank = "D"
         title = "小物"
@@ -195,10 +188,9 @@ def ending():
         title = "臆病者"
         desc = "【0-80】あなたは暴動を恐れるあまり、媚びへつらうような政治を行いました。命は助かりましたが、歴史には「退屈な行政官」として記録されます。"
 
-    # 本番URLを設定してください
-    site_url = "https://shogun-simulator.onrender.com"
+    site_url = "https://shogun-simulator.onrender.com/"
     share_text = f"【将軍様シミュレーター】ランク『{rank}: {title}』\n最終幸福度: {happiness}/100\n#将軍様シミュレーター\n{site_url}"
-    share_url = "https://twitter.com/intent/tweet?text=" + share_text
+    share_url = "https://twitter.com/intent/tweet?text=" + quote(share_text)
 
     return render_template('summary.html', 
                            summary_title=f"ARCHIVE: {title}", 
@@ -207,5 +199,4 @@ def ending():
                            rank=rank)
 
 if __name__ == '__main__':
-    # デバッグモードは開発時のみ有効にする
     app.run(debug=True, host='0.0.0.0', port=5000)
